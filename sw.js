@@ -1,10 +1,13 @@
 
 var CACHE_NAME = 'my-site-cache-v1';
 var urlsToCache = [
-  '/',
-  'jq.js',
-  'main.css',
-  'main.js',
+  '/',  
+  'main.css',  
+  'angular-material.css',
+  'angular.min.js',
+  'angular-animate.min.js',
+  'angular-aria.min.js',
+   'angular-material.min.js'
 ];
 
 self.addEventListener('install', function (event) {
