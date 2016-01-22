@@ -1,16 +1,189 @@
-<!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Service Worker</title>
-	<link rel="stylesheet" href="main.css">
+    <!-- Angular Material style sheet -->
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
 </head>
-<body>
-	<div class="content">
-		<ul id ="cats"></ul>
-	</div>
-	<script src="jq.js" type="text/javascript" charset="utf-8"></script>
-	<script src="main.js" type="text/javascript" charset="utf-8"></script>
+<style>
+    body {
+        position: relative;
+    }
+    
+    .intro {
+        position: absolute;
+        left: 30px;
+        top: 20px;
+        width: 600px;
+        height: 20px;
+    }
+    
+    .demo {
+        position: relative;
+        width: 600px;
+        height: 300px;
+        background-color: #aeaeae;
+        margin-top: 40px;
+        margin-left: 0px;
+    }
+    
+    .demo a {
+        text-decoration: none !important;
+        color: white;
+        height: 100%;
+        width: 100%;
+    }
+    
+    .demo a.visited {
+        color: white;
+    }
+    
+    .demo #content {
+        background-color: rgb(255, 244, 220);
+        padding: 30px;
+        font-weight: 600;
+        border: 1px solid #aeaeae;
+        border-top: none;
+    }
+</style>
+
+<body ng-app="BlankApp" ng-cloak>
+
+
+    <div ng-controller="MyController" layout="column" layout-fill>
+        <section layout="row" flex>
+            <md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
+                <md-toolbar class="md-theme-indigo" layout="row">
+                    <h1 class="md-toolbar-tools">Sidenav Left</h1>
+                    <span flex>
+        <md-menu>
+      <md-button aria-label="Open phone interactions menu" class="md-icon-button" ng-click="ctrl.openMenu($mdOpenMenu, $event)">
+        <md-icon md-menu-origin class="material-icons">phone</md-icon>
+      </md-button>
+      <md-menu-content width="4">
+        <md-menu-item>
+          <md-button ng-click="ctrl.redial($event)">
+            <md-icon md-svg-icon="call:dialpad" md-menu-align-target></md-icon>
+            Redial
+          </md-button>
+        </md-menu-item>
+        <md-menu-item>
+          <md-button disabled="disabled" ng-click="ctrl.checkVoicemail()">
+            <md-icon md-svg-icon="call:voicemail"></md-icon>
+            Check voicemail
+          </md-button>
+        </md-menu-item>
+        <md-menu-divider></md-menu-divider>
+        <md-menu-item>
+          <md-button ng-click="ctrl.toggleNotifications()">
+            <md-icon md-svg-icon="social:notifications-{{ctrl.notificationsEnabled ? 'off' : 'on'}}"></md-icon>
+            {{ctrl.notificationsEnabled ? 'Disable' : 'Enable' }} notifications
+          </md-button>
+        </md-menu-item>
+      </md-menu-content>
+    </md-menu> 
+      </md-toolbar>
+      <md-content class="md-padding" >
+        <md-button ng-click="close()" class="md-primary" hide-gt-md>
+          Close Sidenav Left
+        </md-button>
+        <p hide-md show-gt-md>
+          This sidenav is locked open on your device. To go back to the default behavior,
+          narrow your display.
+        </p>
+        <p> 
+        The "right" sideNav is open = {{isOpen()}} </p>
+      </md-content>
+    </md-sidenav>
+    <md-content flex class="md-padding">
+      <div layout="column" layout-fill layout-align="center center">
+          <p>This is done using service worker concept, if your chrome browser version is more than 42, try offline :) </p>
+        <div>
+          <md-button ng-click="toggleLeft()" class="md-primary" hide-gt-md>
+            Toggle left
+          </md-button>
+        </div>
+        <div>
+          <md-button ng-click="toggle()" class="md-primary" >
+            Toggle right
+          </md-button>
+        </div>
+      </div>
+    </md-content>
+    <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="right">
+      <md-toolbar class="md-theme-light">
+        <h1 class="md-toolbar-tools">Sidenav Right</h1>
+      </md-toolbar>
+      <md-content  class="md-padding">
+        
+      </md-content>
+    </md-sidenav>
+  </section>
+</div>
+
+    <!-- Angular Material requires Angular.js Libraries -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+
+    <!-- Angular Material Library -->
+    <script src="http://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
+    
+
+    <!-- Your application bootstrap  -->
+    <script type="text/javascript">
+        /**
+         * You must include the dependency on 'ngMaterial' 
+         */
+
+        var app = angular.module('BlankApp', ['ngMaterial']);
+        app.controller('MyController', function($scope, $timeout, $mdSidenav, $mdComponentRegistry, $log, $mdToast) {
+             $scope.toggle = angular.noop;
+                  $scope.isOpen = function() { return false };
+
+                  $mdComponentRegistry
+                    .when('right')
+                    .then( function(sideNav){
+
+                      $scope.isOpen = angular.bind( sideNav, sideNav.isOpen );
+                      $scope.toggle = angular.bind( sideNav, sideNav.toggle );
+
+                    });
+
+                  $scope.toggleLeft = function() {
+                    $mdSidenav('left').toggle()
+                                      .then(function(){
+                                          $log.debug("toggle left is done");
+                                      });
+                  };
+                  $scope.toggleRight = function() {
+                    $mdSidenav('right').toggle()
+                                        .then(function(){
+                                          $log.debug("toggle RIGHT is done");
+                                        });
+                  };
+            
+                if ('serviceWorker' in navigator) {
+                    //You can call register every time a page loads without concern; the browser will figure out if the service worker is already registered or not and handle it accordingly.
+                      navigator.serviceWorker.register('sw.js').then(function(registration) {
+                        // Registration was successful
+                        console.log('ServiceWorker registration successful with scope: ',    registration.scope);
+                          $mdToast.show(
+                          $mdToast.simple()
+                            .textContent('You can go offline')
+                            .position("bottom")
+                            .hideDelay(3000)
+                        );
+                      }).catch(function(err) {
+                        // registration failed :(
+                        console.log('ServiceWorker registration failed: ', err);
+                      });
+                    }
+            
+                    
+        });
+    </script>
+
 </body>
+
 </html>
