@@ -46,10 +46,10 @@
     }
 </style>
 
-<body ng-app="BlankApp" ng-cloak>
+<body ng-app="BlankApp" ng-controller="MyController" ng-cloak md-swipe-left="onSwipeLeft()" md-swipe-right="onSwipeRight()">
 
 
-    <div ng-controller="MyController" layout="column" layout-fill>
+    <div  layout="column" layout-fill>
         <section layout="row" flex>
             <md-sidenav class="md-sidenav-left md-whiteframe-z2" md-component-id="left" md-is-locked-open="$mdMedia('gt-md')">
                 <md-toolbar class="md-theme-indigo" layout="row">
@@ -135,7 +135,7 @@
       </div>
       
     </md-content>
-    <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="right">
+    <md-sidenav class="md-sidenav-right md-whiteframe-z2" md-component-id="right" >
       <md-toolbar class="md-theme-light">
         <h1 class="md-toolbar-tools">Sidenav Right</h1>
       </md-toolbar>
@@ -188,7 +188,14 @@
                                           $log.debug("toggle RIGHT is done");
                                         });
                   };
-            
+                $scope.onSwipeRight = function(){
+                    console.log(">>>>>")
+                    $scope.toggleLeft()
+                }
+                $scope.onSwipeLeft = function(){
+                    console.log(">>>>>")
+                    $scope.toggleLeft()
+                }
                 if ('serviceWorker' in navigator) {
                     //You can call register every time a page loads without concern; the browser will figure out if the service worker is already registered or not and handle it accordingly.
                       navigator.serviceWorker.register('sw.js').then(function(registration) {
